@@ -404,7 +404,7 @@ export const getCastVoteUrl = (tripId: number,
 }
 
 /**
- * Stores one anonymous browser vote for a place in a trip
+ * Stores one display-name vote for a place in a trip
  * @summary Save a favorite or cast a group vote
  */
 export const castVote = async (tripId: number,

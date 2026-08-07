@@ -12,6 +12,6 @@ export interface VoteInput {
      * @minLength 1
      * @maxLength 128
      */
-  voterId: string;
+  displayName: string;
   mode: VoteInputMode;
 }

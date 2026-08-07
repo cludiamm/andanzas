@@ -49,7 +49,7 @@ paths:
       description: Returns a trip and its curated place options with vote counts
       parameters:
         - $ref: "#/components/parameters/TripId"
-        - $ref: "#/components/parameters/VoterId"
+        - $ref: "#/components/parameters/DisplayName"
       responses:
         "200":
           description: Trip
@@ -71,7 +71,7 @@ paths:
       description: Returns the leading place options and total voting activity for a trip
       parameters:
         - $ref: "#/components/parameters/TripId"
-        - $ref: "#/components/parameters/VoterId"
+        - $ref: "#/components/parameters/DisplayName"
       responses:
         "200":
           description: Trip summary
@@ -90,7 +90,7 @@ paths:
       operationId: castVote
       tags: [trips]
       summary: Save a favorite or cast a group vote
-      description: Stores one anonymous browser vote for a place in a trip
+      description: Stores one display-name vote for a place in a trip
       parameters:
         - $ref: "#/components/parameters/TripId"
         - $ref: "#/components/parameters/PlaceId"
@@ -135,8 +135,8 @@ components:
       schema:
         type: number
         minimum: 1
-    VoterId:
-      name: voterId
+    DisplayName:
+      name: displayName
       in: query
       required: false
       schema:
@@ -178,6 +178,10 @@ components:
           type: number
         isVoted:
           type: boolean
+        voters:
+          type: array
+          items:
+            type: string
       required:
         - id
         - tripId
@@ -188,6 +192,7 @@ components:
         - imageUrl
         - voteCount
         - isVoted
+        - voters
     Trip:
       type: object
       properties:
@@ -286,7 +291,7 @@ components:
     VoteInput:
       type: object
       properties:
-        voterId:
+        displayName:
           type: string
           minLength: 1
           maxLength: 128
@@ -294,7 +299,7 @@ components:
           type: string
           enum: [solo, group]
       required:
-        - voterId
+        - displayName
         - mode
     VoteResult:
       type: object

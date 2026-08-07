@@ -5,11 +5,11 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { VoterIdParameter } from './voterIdParameter';
+import type { DisplayNameParameter } from './displayNameParameter';
 
 export type GetTripParams = {
 /**
  * @maxLength 128
  */
-voterId?: VoterIdParameter;
+displayName?: DisplayNameParameter;
 };

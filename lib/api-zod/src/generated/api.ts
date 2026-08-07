@@ -46,12 +46,12 @@ export const GetTripParams = zod.object({
   "tripId": zod.coerce.number().min(1)
 })
 
-export const getTripQueryVoterIdMax = 128;
+export const getTripQueryDisplayNameMax = 128;
 
 
 
 export const GetTripQueryParams = zod.object({
-  "voterId": zod.coerce.string().max(getTripQueryVoterIdMax).optional()
+  "displayName": zod.coerce.string().max(getTripQueryDisplayNameMax).optional()
 })
 
 export const GetTripResponse = zod.object({
@@ -72,7 +72,8 @@ export const GetTripResponse = zod.object({
   "description": zod.string(),
   "imageUrl": zod.string(),
   "voteCount": zod.number(),
-  "isVoted": zod.boolean()
+  "isVoted": zod.boolean(),
+  "voters": zod.array(zod.string())
 }))
 })
 
@@ -88,12 +89,12 @@ export const GetTripSummaryParams = zod.object({
   "tripId": zod.coerce.number().min(1)
 })
 
-export const getTripSummaryQueryVoterIdMax = 128;
+export const getTripSummaryQueryDisplayNameMax = 128;
 
 
 
 export const GetTripSummaryQueryParams = zod.object({
-  "voterId": zod.coerce.string().max(getTripSummaryQueryVoterIdMax).optional()
+  "displayName": zod.coerce.string().max(getTripSummaryQueryDisplayNameMax).optional()
 })
 
 export const GetTripSummaryResponse = zod.object({
@@ -109,7 +110,7 @@ export const GetTripSummaryResponse = zod.object({
 
 
 /**
- * Stores one anonymous browser vote for a place in a trip
+ * Stores one display-name vote for a place in a trip
  * @summary Save a favorite or cast a group vote
  */
 
@@ -121,12 +122,12 @@ export const CastVoteParams = zod.object({
   "placeId": zod.coerce.number().min(1)
 })
 
-export const castVoteBodyVoterIdMax = 128;
+export const castVoteBodyDisplayNameMax = 128;
 
 
 
 export const CastVoteBody = zod.object({
-  "voterId": zod.string().min(1).max(castVoteBodyVoterIdMax),
+  "displayName": zod.string().min(1).max(castVoteBodyDisplayNameMax),
   "mode": zod.enum(['solo', 'group'])
 })
 

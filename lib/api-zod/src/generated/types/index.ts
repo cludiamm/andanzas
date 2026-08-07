@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './displayNameParameter';
 export * from './error';
 export * from './getTripParams';
 export * from './getTripSummaryParams';
@@ -19,4 +20,3 @@ export * from './voteInput';
 export * from './voteInputMode';
 export * from './voteResult';
 export * from './voteResultMode';
-export * from './voterIdParameter';

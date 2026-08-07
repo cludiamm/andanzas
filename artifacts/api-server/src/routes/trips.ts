@@ -172,11 +172,11 @@ async function ensureSeeded(): Promise<void> {
   await seedPromise;
 }
 
-function voterIdFromRequest(value: unknown): string | undefined {
+function displayNameFromRequest(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
-async function getPlaceCounts(tripId: number, voterId?: string) {
+async function getPlaceCounts(tripId: number, displayName?: string) {
   const rows = await db
     .select({
       id: placesTable.id,
@@ -187,9 +187,14 @@ async function getPlaceCounts(tripId: number, voterId?: string) {
       description: placesTable.description,
       imageUrl: placesTable.imageUrl,
       voteCount: count(votesTable.id),
-      isVoted: voterId
-        ? sql<boolean>`bool_or(${votesTable.voterId} = ${voterId})`
+      isVoted: displayName
+        ? sql<boolean>`bool_or(${votesTable.displayName} = ${displayName})`
         : sql<boolean>`false`,
+      voters: sql<string[]>`coalesce(
+        array_agg(distinct ${votesTable.displayName})
+          filter (where ${votesTable.displayName} is not null),
+        ARRAY[]::text[]
+      )`,
     })
     .from(placesTable)
     .leftJoin(
@@ -204,6 +209,7 @@ async function getPlaceCounts(tripId: number, voterId?: string) {
     ...row,
     voteCount: Number(row.voteCount),
     isVoted: Boolean(row.isVoted),
+    voters: row.voters ?? [],
   }));
 }
 
@@ -246,7 +252,10 @@ router.get("/trips/:tripId", async (req, res): Promise<void> => {
     return;
   }
 
-  const places = await getPlaceCounts(trip.id, voterIdFromRequest(query.data.voterId));
+  const places = await getPlaceCounts(
+    trip.id,
+    displayNameFromRequest(query.data.displayName),
+  );
   const result = {
     ...trip,
     placeCount: places.length,
@@ -278,7 +287,10 @@ router.get("/trips/:tripId/summary", async (req, res): Promise<void> => {
     return;
   }
 
-  const places = await getPlaceCounts(trip.id, voterIdFromRequest(query.data.voterId));
+  const places = await getPlaceCounts(
+    trip.id,
+    displayNameFromRequest(query.data.displayName),
+  );
   const result = {
     tripId: trip.id,
     totalVotes: places.reduce((sum, place) => sum + place.voteCount, 0),
@@ -328,7 +340,7 @@ router.post(
         and(
           eq(votesTable.tripId, place.tripId),
           eq(votesTable.placeId, place.id),
-          eq(votesTable.voterId, body.data.voterId),
+          eq(votesTable.displayName, body.data.displayName),
         ),
       );
 
@@ -338,7 +350,7 @@ router.post(
       await db.insert(votesTable).values({
         tripId: place.tripId,
         placeId: place.id,
-        voterId: body.data.voterId,
+        displayName: body.data.displayName,
         mode: body.data.mode,
       });
     }

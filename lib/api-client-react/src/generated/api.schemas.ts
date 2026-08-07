@@ -23,6 +23,7 @@ export interface Place {
   imageUrl: string;
   voteCount: number;
   isVoted: boolean;
+  voters: string[];
 }
 
 export interface Trip {
@@ -77,7 +78,7 @@ export interface VoteInput {
      * @minLength 1
      * @maxLength 128
      */
-  voterId: string;
+  displayName: string;
   mode: VoteInputMode;
 }
 
@@ -98,19 +99,19 @@ export interface VoteResult {
   mode: VoteResultMode;
 }
 
-export type VoterIdParameter = string;
+export type DisplayNameParameter = string;
 
 export type GetTripParams = {
 /**
  * @maxLength 128
  */
-voterId?: VoterIdParameter;
+displayName?: DisplayNameParameter;
 };
 
 export type GetTripSummaryParams = {
 /**
  * @maxLength 128
  */
-voterId?: VoterIdParameter;
+displayName?: DisplayNameParameter;
 };
 

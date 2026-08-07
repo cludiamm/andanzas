@@ -16,4 +16,5 @@ export interface Place {
   imageUrl: string;
   voteCount: number;
   isVoted: boolean;
+  voters: string[];
 }

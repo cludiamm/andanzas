@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, ChevronDown, Clock3, Heart, MapPin, Share2, ThumbsUp, Users } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, Clock3, Heart, MapPin, Share2, ThumbsUp, UserRound, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
@@ -9,13 +9,8 @@ import { InlineError, TripDetailSkeleton } from '@/components/LoadingStates';
 
 type Mode = 'solo' | 'group';
 
-function getVoterId() {
-  const key = 'andanzas-voter-id';
-  const existing = window.localStorage.getItem(key);
-  if (existing) return existing;
-  const created = `traveler-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
-  window.localStorage.setItem(key, created);
-  return created;
+function getDisplayName(tripId: number) {
+  return window.localStorage.getItem(`andanzas-display-name-${tripId}`) ?? '';
 }
 
 function PlaceCard({ place, mode, onVote, pending }: { place: Place; mode: Mode; onVote: (placeId: number) => void; pending: boolean }) {
@@ -34,6 +29,12 @@ function PlaceCard({ place, mode, onVote, pending }: { place: Place; mode: Mode;
           <span className="mono pt-1 text-[10px] uppercase tracking-[.12em] text-muted-foreground">{countLabel}</span>
         </div>
         <p className="mt-4 line-clamp-3 text-sm leading-6 text-muted-foreground">{place.description}</p>
+        {mode === 'group' && (place.voters?.length ?? 0) > 0 && (
+          <div className="mt-4 flex items-start gap-2 text-xs text-muted-foreground" data-testid={`voters-${place.id}`}>
+            <UserRound className="mt-0.5 shrink-0 text-primary" size={14} />
+            <span>Voted by {place.voters.join(', ')}</span>
+          </div>
+        )}
         <button className={`mt-5 flex w-full items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition-all ${place.isVoted ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-background text-foreground hover:border-primary hover:text-primary'} disabled:cursor-wait disabled:opacity-60`} data-testid={`button-vote-${place.id}`} disabled={pending} onClick={() => onVote(place.id)} type="button">
           {place.isVoted ? <><Check size={16} /> {mode === 'solo' ? 'Saved to my trip' : 'Your vote is in'}</> : <><ThumbsUp size={16} /> {mode === 'solo' ? 'Save this place' : 'Vote for this place'}</>}
         </button>
@@ -47,17 +48,42 @@ export default function TripPage() {
   const tripId = Number(params.tripId);
   const queryClient = useQueryClient();
   const [mode, setMode] = useState<Mode>('solo');
-  const voterId = useMemo(() => getVoterId(), []);
-  const tripQueryKey = getGetTripQueryKey(tripId, { voterId });
-  const summaryQueryKey = getGetTripSummaryQueryKey(tripId, { voterId });
-  const tripQuery = useGetTrip(tripId, { voterId }, { query: { queryKey: tripQueryKey, enabled: Number.isFinite(tripId) } });
-  const summaryQuery = useGetTripSummary(tripId, { voterId }, { query: { queryKey: summaryQueryKey, enabled: Number.isFinite(tripId) } });
+  const [displayName, setDisplayName] = useState(() => Number.isFinite(tripId) ? getDisplayName(tripId) : '');
+  const [nameDraft, setNameDraft] = useState(displayName);
+  const [nameError, setNameError] = useState('');
+  const [showNamePrompt, setShowNamePrompt] = useState(!displayName);
+  const identityParam = displayName.trim() ? { displayName: displayName.trim() } : undefined;
+  const tripQueryKey = getGetTripQueryKey(tripId, identityParam);
+  const summaryQueryKey = getGetTripSummaryQueryKey(tripId, identityParam);
+  const tripQuery = useGetTrip(tripId, identityParam, { query: { queryKey: tripQueryKey, enabled: Number.isFinite(tripId) } });
+  const summaryQuery = useGetTripSummary(tripId, identityParam, { query: { queryKey: summaryQueryKey, enabled: Number.isFinite(tripId) } });
   const voteMutation = useCastVote();
   const places = useMemo(() => tripQuery.data?.places ?? [], [tripQuery.data?.places]);
   const summary = summaryQuery.data;
 
+  const saveDisplayName = () => {
+    const nextName = nameDraft.trim().replace(/\s+/g, ' ');
+    if (!nextName) {
+      setNameError('Add a name so the group knows who voted.');
+      return;
+    }
+    if (nextName.length > 128) {
+      setNameError('Keep your display name under 128 characters.');
+      return;
+    }
+    window.localStorage.setItem(`andanzas-display-name-${tripId}`, nextName);
+    setDisplayName(nextName);
+    setNameDraft(nextName);
+    setNameError('');
+    setShowNamePrompt(false);
+  };
+
   const voteFor = (placeId: number) => {
-    voteMutation.mutate({ tripId, placeId, data: { voterId, mode: mode === 'solo' ? VoteInputMode.solo : VoteInputMode.group } }, {
+    if (!displayName) {
+      setShowNamePrompt(true);
+      return;
+    }
+    voteMutation.mutate({ tripId, placeId, data: { displayName, mode: mode === 'solo' ? VoteInputMode.solo : VoteInputMode.group } }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: tripQueryKey });
         queryClient.invalidateQueries({ queryKey: summaryQueryKey });
@@ -103,6 +129,25 @@ export default function TripPage() {
                 </div>
               </div>
               <div className="mt-4 flex items-start gap-3 rounded-xl bg-secondary/60 px-4 py-3 text-sm text-secondary-foreground"><Clock3 className="mt-0.5 shrink-0 text-primary" size={16} /><p>{mode === 'solo' ? 'Save the places that feel like you. Your choices stay yours.' : 'Every vote is visible to the group, so the best plan can emerge together.'}</p><ChevronDown className="ml-auto mt-0.5 shrink-0 opacity-40" size={16} /></div>
+              <div className="mt-5 rounded-2xl border border-primary/20 bg-card p-5 shadow-[0_10px_30px_rgba(38,61,57,.06)]" data-testid="display-name-panel">
+                <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="mono text-[10px] uppercase tracking-[.16em] text-primary">{displayName ? 'Your trip name' : 'Before you vote'}</p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {displayName ? <>You are voting as <strong className="font-semibold text-foreground">{displayName}</strong>. This name is saved only on this device for this trip.</> : 'Choose a display name so the group can see who voted. No account or login needed.'}
+                    </p>
+                  </div>
+                  {!showNamePrompt && <button className="shrink-0 rounded-full border border-border px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:border-primary hover:text-primary" data-testid="button-change-name" onClick={() => { setNameDraft(displayName); setShowNamePrompt(true); }} type="button">Change name</button>}
+                </div>
+                {showNamePrompt && (
+                  <form className="mt-4 flex flex-col gap-3 sm:flex-row" onSubmit={(event) => { event.preventDefault(); saveDisplayName(); }}>
+                    <label className="sr-only" htmlFor="display-name">Display name</label>
+                    <input autoComplete="nickname" autoFocus={!displayName} className="min-h-11 flex-1 rounded-full border border-border bg-background px-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20" id="display-name" maxLength={128} onChange={(event) => { setNameDraft(event.target.value); setNameError(''); }} placeholder="Your name, e.g. Maya" value={nameDraft} />
+                    <button className="min-h-11 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90" data-testid="button-save-name" type="submit">Use this name</button>
+                  </form>
+                )}
+                {nameError && <p className="mt-2 text-xs text-accent" data-testid="status-name-error">{nameError}</p>}
+              </div>
               {summaryQuery.isError && <p className="mt-5 text-sm text-accent" data-testid="status-summary-error">Live vote totals are taking a moment. You can still vote below.</p>}
               <div className="mt-7 grid gap-6 md:grid-cols-2">{places.map((place) => <PlaceCard key={place.id} mode={mode} onVote={voteFor} pending={voteMutation.isPending} place={place} />)}</div>
               {places.length === 0 && <div className="paper-card mt-7 rounded-2xl p-12 text-center" data-testid="status-empty-places"><p className="serif text-2xl font-semibold">No places pinned yet</p><p className="mt-2 text-sm text-muted-foreground">This trip is waiting for its first good idea.</p></div>}

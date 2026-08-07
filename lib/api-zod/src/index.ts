@@ -1,5 +1,6 @@
 export * from "./generated/api";
 export type {
+  DisplayNameParameter,
   Error,
   HealthStatus,
   Place,
@@ -11,5 +12,4 @@ export type {
   VoteInputMode,
   VoteResult,
   VoteResultMode,
-  VoterIdParameter,
 } from "./generated/types";
