@@ -22,6 +22,17 @@ function PlaceCard({ place, mode, onVote, pending }: { place: Place; mode: Mode;
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent" />
         <span className="absolute left-4 top-4 rounded-full bg-background/85 px-3 py-1 text-[10px] font-semibold uppercase tracking-[.16em] text-foreground backdrop-blur">{place.category}</span>
         {place.isVoted && <span className="absolute bottom-4 right-4 flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"><Check size={13} /> {mode === 'solo' ? 'Saved' : 'Voted'}</span>}
+        {place.imageUrl && place.imageAttributionName && (
+          <a
+            className="absolute bottom-2 left-2 rounded px-1.5 py-0.5 text-[9px] text-white/60 backdrop-blur-sm transition-colors hover:text-white/90"
+            href={place.imageAttributionUrl ?? `https://unsplash.com?utm_source=andanzas&utm_medium=referral`}
+            rel="noopener noreferrer"
+            target="_blank"
+            title={`Photo by ${place.imageAttributionName} on Unsplash`}
+          >
+            ↗ {place.imageAttributionName} / Unsplash
+          </a>
+        )}
       </div>
       <div className="p-5">
         <div className="flex items-start justify-between gap-4">

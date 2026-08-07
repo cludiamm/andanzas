@@ -176,6 +176,10 @@ components:
           type: string
         imageUrl:
           type: ["string", "null"]
+        imageAttributionName:
+          type: ["string", "null"]
+        imageAttributionUrl:
+          type: ["string", "null"]
         price:
           type: ["string", "null"]
         hours:
@@ -207,6 +211,8 @@ components:
         - category
         - description
         - imageUrl
+        - imageAttributionName
+        - imageAttributionUrl
         - price
         - hours
         - notes

@@ -19,6 +19,10 @@ export interface Place {
   /** @nullable */
   imageUrl: string | null;
   /** @nullable */
+  imageAttributionName: string | null;
+  /** @nullable */
+  imageAttributionUrl: string | null;
+  /** @nullable */
   price: string | null;
   /** @nullable */
   hours: string | null;

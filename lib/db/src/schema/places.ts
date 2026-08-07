@@ -17,6 +17,8 @@ export const placesTable = pgTable("places", {
   category: text("category").notNull(),
   description: text("description").notNull(),
   imageUrl: text("image_url"),
+  imageAttributionName: text("image_attribution_name"),
+  imageAttributionUrl: text("image_attribution_url"),
   price: text("price"),
   hours: text("hours"),
   notes: text("notes"),

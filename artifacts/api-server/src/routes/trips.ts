@@ -43,6 +43,8 @@ async function getPlaceCounts(tripId: number, displayName?: string) {
       category: placesTable.category,
       description: placesTable.description,
       imageUrl: placesTable.imageUrl,
+      imageAttributionName: placesTable.imageAttributionName,
+      imageAttributionUrl: placesTable.imageAttributionUrl,
       price: placesTable.price,
       hours: placesTable.hours,
       notes: placesTable.notes,
