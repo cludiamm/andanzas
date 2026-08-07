@@ -7,7 +7,7 @@ no votes yet (proposed but not yet rated).
 
 ```json
 {
-  "trip": { "name": "Japan & South Korea 2023" },
+  "trip": { "name": "Japan Japan & South Korea 2023 South Korea 2026" },
   "destinations": [
     {
       "country": "Japan", "city": "Tokyo", "estimated_days": 4.0,
