@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+:root {
+  --background: 39 44% 95%;
+  --foreground: 196 35% 17%;
+  --border: 37 23% 83%;
+  --input: 37 23% 83%;
+  --ring: 171 53% 33%;
+  --card: 39 44% 98%;
+  --card-foreground: 196 35% 17%;
+  --card-border: 37 23% 83%;
+  --popover: 39 44% 98%;
+  --popover-foreground: 196 35% 17%;
+  --primary: 171 53% 33%;
+  --primary-foreground: 39 44% 97%;
+  --secondary: 33 47% 88%;
+  --secondary-foreground: 196 35% 17%;
+  --muted: 38 25% 90%;
+  --muted-foreground: 195 17% 45%;
+  --accent: 14 74% 57%;
+  --accent-foreground: 39 44% 97%;
+  --destructive: 5 64% 48%;
+  --destructive-foreground: 39 44% 97%;
+  --app-font-sans: 'DM Sans', sans-serif;
+  --app-font-serif: 'Fraunces', Georgia, serif;
+  --app-font-mono: 'DM Mono', monospace;
+  --radius: 1.1rem;
+  --shadow-soft: 0 14px 38px rgba(38, 61, 57, .09);
+  --shadow-float: 0 20px 55px rgba(38, 61, 57, .15);
+}
+
+.dark {
+  --background: 195 30% 11%;
+  --foreground: 39 35% 93%;
+  --border: 195 21% 24%;
+  --input: 195 21% 24%;
+  --ring: 171 53% 48%;
+  --card: 195 27% 15%;
+  --card-foreground: 39 35% 93%;
+  --card-border: 195 21% 24%;
+  --popover: 195 27% 15%;
+  --popover-foreground: 39 35% 93%;
+  --primary: 171 53% 48%;
+  --primary-foreground: 195 30% 11%;
+  --secondary: 195 22% 21%;
+  --secondary-foreground: 39 35% 93%;
+  --muted: 195 22% 20%;
+  --muted-foreground: 195 17% 68%;
+  --accent: 14 74% 61%;
+  --accent-foreground: 195 30% 11%;
+  --destructive: 5 64% 58%;
+  --destructive-foreground: 39 44% 97%;
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { background: hsl(var(--background)); }
+  body {
+    @apply font-sans antialiased text-foreground;
+    min-width: 320px;
+    background:
+      radial-gradient(circle at 8% 0%, rgba(235, 183, 112, .17), transparent 30rem),
+      hsl(var(--background));
+  }
+  button, a { -webkit-tap-highlight-color: transparent; }
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(1deg); }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: .55; }
+  50% { opacity: 1; }
+}
+
+.page-in { animation: page-in .55s cubic-bezier(.2,.8,.2,1) both; }
+.delay-1 { animation-delay: 80ms; }
+.delay-2 { animation-delay: 160ms; }
+.delay-3 { animation-delay: 240ms; }
+.float-mark { animation: drift 5s ease-in-out infinite; }
+.skeleton { animation: pulse-soft 1.5s ease-in-out infinite; }
+.serif { font-family: var(--app-font-serif); }
+.mono { font-family: var(--app-font-mono); }
+.paper-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--card-border));
+  box-shadow: var(--shadow-soft);
+}
+.paper-card:hover { box-shadow: var(--shadow-float); }
+.image-wash { background: linear-gradient(145deg, rgba(21, 90, 81, .8), rgba(21, 90, 81, .1)); }
+.grain::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: .035;
+  z-index: 30;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}

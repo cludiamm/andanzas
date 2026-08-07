@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Andanzas"
+description = "A lightweight trip-planning app where travelers curate place options, save solo favorites, and vote with a group to find the most-loved places."
+version = "1.0.0"
+id = "artifacts/andanzas"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23249
+
+[services.development]
+run = "pnpm --filter @workspace/andanzas run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/andanzas", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/andanzas/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23249"
+BASE_PATH = "/"

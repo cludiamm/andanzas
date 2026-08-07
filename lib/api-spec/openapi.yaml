@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: trips
+    description: Trip planning and voting operations
 paths:
   /healthz:
     get:
@@ -24,7 +26,122 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /trips:
+    get:
+      operationId: listTrips
+      tags: [trips]
+      summary: List trips
+      description: Returns the available trips with lightweight place and vote summaries
+      responses:
+        "200":
+          description: Trips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TripSummary"
+  /trips/{tripId}:
+    get:
+      operationId: getTrip
+      tags: [trips]
+      summary: Get a trip
+      description: Returns a trip and its curated place options with vote counts
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - $ref: "#/components/parameters/VoterId"
+      responses:
+        "200":
+          description: Trip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trip"
+        "404":
+          description: Trip not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /trips/{tripId}/summary:
+    get:
+      operationId: getTripSummary
+      tags: [trips]
+      summary: Get trip voting summary
+      description: Returns the leading place options and total voting activity for a trip
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - $ref: "#/components/parameters/VoterId"
+      responses:
+        "200":
+          description: Trip summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TripVoteSummary"
+        "404":
+          description: Trip not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /trips/{tripId}/places/{placeId}/vote:
+    post:
+      operationId: castVote
+      tags: [trips]
+      summary: Save a favorite or cast a group vote
+      description: Stores one anonymous browser vote for a place in a trip
+      parameters:
+        - $ref: "#/components/parameters/TripId"
+        - $ref: "#/components/parameters/PlaceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoteInput"
+      responses:
+        "200":
+          description: Updated vote result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoteResult"
+        "400":
+          description: Invalid vote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Place not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 components:
+  parameters:
+    TripId:
+      name: tripId
+      in: path
+      required: true
+      schema:
+        type: number
+        minimum: 1
+    PlaceId:
+      name: placeId
+      in: path
+      required: true
+      schema:
+        type: number
+        minimum: 1
+    VoterId:
+      name: voterId
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 128
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +150,173 @@ components:
           type: string
       required:
         - status
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    Place:
+      type: object
+      properties:
+        id:
+          type: number
+        tripId:
+          type: number
+        name:
+          type: string
+        city:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        voteCount:
+          type: number
+        isVoted:
+          type: boolean
+      required:
+        - id
+        - tripId
+        - name
+        - city
+        - category
+        - description
+        - imageUrl
+        - voteCount
+        - isVoted
+    Trip:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        destination:
+          type: string
+        dates:
+          type: string
+        description:
+          type: string
+        coverImageUrl:
+          type: string
+        placeCount:
+          type: number
+        totalVotes:
+          type: number
+        places:
+          type: array
+          items:
+            $ref: "#/components/schemas/Place"
+      required:
+        - id
+        - title
+        - destination
+        - dates
+        - description
+        - coverImageUrl
+        - placeCount
+        - totalVotes
+        - places
+    TripSummary:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        destination:
+          type: string
+        dates:
+          type: string
+        description:
+          type: string
+        coverImageUrl:
+          type: string
+        placeCount:
+          type: number
+        totalVotes:
+          type: number
+        leadingPlace:
+          type: ["string", "null"]
+      required:
+        - id
+        - title
+        - destination
+        - dates
+        - description
+        - coverImageUrl
+        - placeCount
+        - totalVotes
+        - leadingPlace
+    TripVoteSummary:
+      type: object
+      properties:
+        tripId:
+          type: number
+        totalVotes:
+          type: number
+        leadingPlace:
+          type: ["string", "null"]
+        places:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlaceVoteSummary"
+      required:
+        - tripId
+        - totalVotes
+        - leadingPlace
+        - places
+    PlaceVoteSummary:
+      type: object
+      properties:
+        placeId:
+          type: number
+        name:
+          type: string
+        voteCount:
+          type: number
+      required:
+        - placeId
+        - name
+        - voteCount
+    VoteInput:
+      type: object
+      properties:
+        voterId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        mode:
+          type: string
+          enum: [solo, group]
+      required:
+        - voterId
+        - mode
+    VoteResult:
+      type: object
+      properties:
+        tripId:
+          type: number
+        placeId:
+          type: number
+        voteCount:
+          type: number
+        totalVotes:
+          type: number
+        isVoted:
+          type: boolean
+        mode:
+          type: string
+          enum: [solo, group]
+      required:
+        - tripId
+        - placeId
+        - voteCount
+        - totalVotes
+        - isVoted
+        - mode
 

@@ -1,2 +1,15 @@
 export * from "./generated/api";
-export * from "./generated/types";
+export type {
+  Error,
+  HealthStatus,
+  Place,
+  PlaceVoteSummary,
+  Trip,
+  TripSummary,
+  TripVoteSummary,
+  VoteInput,
+  VoteInputMode,
+  VoteResult,
+  VoteResultMode,
+  VoterIdParameter,
+} from "./generated/types";
