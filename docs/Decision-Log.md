@@ -12,5 +12,6 @@ Format: Date — Decision — Why
 - 2026-08-06 — Real trip data never committed to GitHub — Claude Code/Agent
   gets an anonymized sample only; full sanitized data goes directly into
   Replit, personal-info tab excluded entirely.
-- OPEN — Auth approach for MVP: real accounts vs. single shared demo link.
-- OPEN — Which specific past trips become the seed set.
+- 2026-08-07 — Auth approach resolved: no user accounts. Voting uses a lightweight name-per-visit identity instead — a shared login would have made every visitor appear as the same voter, undermining the group-consensus feature we most want to demonstrate.
+- 2026-08-07 — Seed data resolved: real family trip data from "Japan & South Korea 2026" (Busan, Seoul, Miyajima, Hokkaido, Osaka, Kyoto, Tokyo — 7 destinations, 47 places, 322 individual ratings). The personal-info tab and full itinerary/finance file were excluded entirely; only place-voting data was used.
+- 2026-08-07 — Place images sourced via the Unsplash API (properly licensed, matched by place name + city) rather than general web scraping.
