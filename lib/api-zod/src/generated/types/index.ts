@@ -6,12 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './destination';
 export * from './displayNameParameter';
 export * from './error';
 export * from './getTripParams';
 export * from './getTripSummaryParams';
 export * from './healthStatus';
 export * from './place';
+export * from './placeRating';
 export * from './placeVoteSummary';
 export * from './trip';
 export * from './tripSummary';

@@ -1,6 +1,12 @@
 import { Router, type IRouter } from "express";
 import { and, asc, count, desc, eq, sql } from "drizzle-orm";
-import { db, placesTable, tripsTable, votesTable } from "@workspace/db";
+import {
+  db,
+  destinationsTable,
+  placesTable,
+  tripsTable,
+  votesTable,
+} from "@workspace/db";
 import {
   CastVoteBody,
   CastVoteParams,
@@ -16,160 +22,10 @@ import {
 
 const router: IRouter = Router();
 
-const sampleTrips = [
-  {
-    trip: {
-      title: "A long weekend in Lisbon",
-      destination: "Lisbon, Portugal",
-      dates: "May 16–19, 2026",
-      description:
-        "Three sunlit days of tiled streets, late lunches, and the best viewpoints in the city.",
-      coverImageUrl:
-        "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=1400&q=85",
-    },
-    places: [
-      {
-        name: "Miradouro da Senhora do Monte",
-        city: "Graça",
-        category: "Viewpoint",
-        description:
-          "The quietest big view of Lisbon, with the castle and red roofs opening out below.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=900&q=85",
-      },
-      {
-        name: "Time Out Market",
-        city: "Cais do Sodré",
-        category: "Food hall",
-        description:
-          "A lively first-night landing spot for small plates, local wine, and a little people watching.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=85",
-      },
-      {
-        name: "Praia da Ursa",
-        city: "Sintra",
-        category: "Beach",
-        description:
-          "A wild Atlantic cove for the day when the itinerary needs salt air and no reservations.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=85",
-      },
-      {
-        name: "Museu Nacional do Azulejo",
-        city: "Xabregas",
-        category: "Culture",
-        description:
-          "A beautiful former convent filled with the blue-and-white stories of Portugal.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1564399579883-451a5d44ec08?auto=format&fit=crop&w=900&q=85",
-      },
-    ],
-  },
-  {
-    trip: {
-      title: "The Dolomites, slowly",
-      destination: "South Tyrol, Italy",
-      dates: "September 4–9, 2026",
-      description:
-        "A mountain reset built around easy mornings, dramatic trails, and long dinners.",
-      coverImageUrl:
-        "https://images.unsplash.com/photo-1464278533981-50106e6176b1?auto=format&fit=crop&w=1400&q=85",
-    },
-    places: [
-      {
-        name: "Lago di Braies",
-        city: "Prags",
-        category: "Lake",
-        description:
-          "An early-morning walk around the milky-blue lake before the day-trippers arrive.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1530789253388-582c481c54b0?auto=format&fit=crop&w=900&q=85",
-      },
-      {
-        name: "Seceda Ridgeline",
-        city: "Val Gardena",
-        category: "Hike",
-        description:
-          "The iconic ridge, reached by cable car and best lingered over rather than rushed.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1464278533981-50106e6176b1?auto=format&fit=crop&w=900&q=85",
-      },
-      {
-        name: "Alpe di Siusi",
-        city: "Castelrotto",
-        category: "Meadow",
-        description:
-          "A wide, gentle landscape for the day when the only plan is to keep walking.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=900&q=85",
-      },
-    ],
-  },
-  {
-    trip: {
-      title: "Kyoto after dark",
-      destination: "Kyoto, Japan",
-      dates: "November 6–11, 2026",
-      description:
-        "Lantern-lit lanes, tiny bars, and the particular magic of an autumn evening in Kyoto.",
-      coverImageUrl:
-        "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1400&q=85",
-    },
-    places: [
-      {
-        name: "Pontocho Alley",
-        city: "Nakagyo",
-        category: "Nightlife",
-        description:
-          "A narrow lantern-lit lane where the best evening plan is to choose a door and see.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=900&q=85",
-      },
-      {
-        name: "Fushimi Inari Taisha",
-        city: "Fushimi",
-        category: "Temple",
-        description:
-          "Walk beneath thousands of vermilion gates after the crowds have thinned.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?auto=format&fit=crop&w=900&q=85",
-      },
-      {
-        name: "Nishiki Market",
-        city: "Nakagyo",
-        category: "Market",
-        description:
-          "A colorful street of pickles, tea, skewers, and the perfect excuse to graze.",
-        imageUrl:
-          "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=900&q=85",
-      },
-    ],
-  },
-];
-
-let seedPromise: Promise<void> | undefined;
-
+// Seeding is an explicit one-time operation. Requests must never recreate or
+// overwrite user data with placeholder content.
 async function ensureSeeded(): Promise<void> {
-  if (!seedPromise) {
-    seedPromise = (async () => {
-      const [{ value: tripCount }] = await db
-        .select({ value: count() })
-        .from(tripsTable);
-      if (Number(tripCount) > 0) return;
-
-      for (const sample of sampleTrips) {
-        const [trip] = await db.insert(tripsTable).values(sample.trip).returning();
-        await db.insert(placesTable).values(
-          sample.places.map((place) => ({ ...place, tripId: trip.id })),
-        );
-      }
-    })().catch((error) => {
-      seedPromise = undefined;
-      throw error;
-    });
-  }
-  await seedPromise;
+  return;
 }
 
 function displayNameFromRequest(value: unknown): string | undefined {
@@ -181,12 +37,18 @@ async function getPlaceCounts(tripId: number, displayName?: string) {
     .select({
       id: placesTable.id,
       tripId: placesTable.tripId,
+      destinationId: placesTable.destinationId,
       name: placesTable.name,
       city: placesTable.city,
       category: placesTable.category,
       description: placesTable.description,
       imageUrl: placesTable.imageUrl,
+      price: placesTable.price,
+      hours: placesTable.hours,
+      notes: placesTable.notes,
       voteCount: count(votesTable.id),
+      ratingTotal: sql<number>`coalesce(sum(${votesTable.rating}), 0)`,
+      ratingAverage: sql<number | null>`avg(${votesTable.rating})`,
       isVoted: displayName
         ? sql<boolean>`bool_or(${votesTable.displayName} = ${displayName})`
         : sql<boolean>`false`,
@@ -194,6 +56,15 @@ async function getPlaceCounts(tripId: number, displayName?: string) {
         array_agg(distinct ${votesTable.displayName})
           filter (where ${votesTable.displayName} is not null),
         ARRAY[]::text[]
+      )`,
+      ratings: sql<Array<{ displayName: string; rating: number }>>`coalesce(
+        json_agg(
+          json_build_object(
+            'displayName', ${votesTable.displayName},
+            'rating', ${votesTable.rating}
+          )
+        ) filter (where ${votesTable.rating} is not null),
+        '[]'::json
       )`,
     })
     .from(placesTable)
@@ -208,8 +79,27 @@ async function getPlaceCounts(tripId: number, displayName?: string) {
   return rows.map((row) => ({
     ...row,
     voteCount: Number(row.voteCount),
+    ratingTotal: Number(row.ratingTotal),
+    ratingAverage: row.ratingAverage === null ? null : Number(row.ratingAverage),
     isVoted: Boolean(row.isVoted),
     voters: row.voters ?? [],
+    ratings: row.ratings ?? [],
+  }));
+}
+
+async function getDestinations(
+  tripId: number,
+  places: Awaited<ReturnType<typeof getPlaceCounts>>,
+) {
+  const destinations = await db
+    .select()
+    .from(destinationsTable)
+    .where(eq(destinationsTable.tripId, tripId))
+    .orderBy(asc(destinationsTable.id));
+
+  return destinations.map((destination) => ({
+    ...destination,
+    places: places.filter((place) => place.destinationId === destination.id),
   }));
 }
 
@@ -219,9 +109,11 @@ router.get("/trips", async (_req, res): Promise<void> => {
   const results = await Promise.all(
     trips.map(async (trip) => {
       const places = await getPlaceCounts(trip.id);
+      const destinations = await getDestinations(trip.id, places);
       return {
         ...trip,
         placeCount: places.length,
+        destinationCount: destinations.length,
         totalVotes: places.reduce((sum, place) => sum + place.voteCount, 0),
         leadingPlace: places[0]?.voteCount > 0 ? places[0].name : null,
       };
@@ -256,13 +148,16 @@ router.get("/trips/:tripId", async (req, res): Promise<void> => {
     trip.id,
     displayNameFromRequest(query.data.displayName),
   );
-  const result = {
-    ...trip,
-    placeCount: places.length,
-    totalVotes: places.reduce((sum, place) => sum + place.voteCount, 0),
-    places,
-  };
-  res.json(GetTripResponse.parse(result));
+  const destinations = await getDestinations(trip.id, places);
+  res.json(
+    GetTripResponse.parse({
+      ...trip,
+      placeCount: places.length,
+      totalVotes: places.reduce((sum, place) => sum + place.voteCount, 0),
+      destinations,
+      places,
+    }),
+  );
 });
 
 router.get("/trips/:tripId/summary", async (req, res): Promise<void> => {
@@ -291,17 +186,18 @@ router.get("/trips/:tripId/summary", async (req, res): Promise<void> => {
     trip.id,
     displayNameFromRequest(query.data.displayName),
   );
-  const result = {
-    tripId: trip.id,
-    totalVotes: places.reduce((sum, place) => sum + place.voteCount, 0),
-    leadingPlace: places[0]?.voteCount > 0 ? places[0].name : null,
-    places: places.map((place) => ({
-      placeId: place.id,
-      name: place.name,
-      voteCount: place.voteCount,
-    })),
-  };
-  res.json(GetTripSummaryResponse.parse(result));
+  res.json(
+    GetTripSummaryResponse.parse({
+      tripId: trip.id,
+      totalVotes: places.reduce((sum, place) => sum + place.voteCount, 0),
+      leadingPlace: places[0]?.voteCount > 0 ? places[0].name : null,
+      places: places.map((place) => ({
+        placeId: place.id,
+        name: place.name,
+        voteCount: place.voteCount,
+      })),
+    }),
+  );
 });
 
 router.post(
@@ -352,6 +248,7 @@ router.post(
         placeId: place.id,
         displayName: body.data.displayName,
         mode: body.data.mode,
+        rating: null,
       });
     }
 

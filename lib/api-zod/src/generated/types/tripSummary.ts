@@ -15,6 +15,7 @@ export interface TripSummary {
   coverImageUrl: string;
   placeCount: number;
   totalVotes: number;
+  destinationCount: number;
   /** @nullable */
   leadingPlace: string | null;
 }

@@ -164,6 +164,8 @@ components:
           type: number
         tripId:
           type: number
+        destinationId:
+          type: ["number", "null"]
         name:
           type: string
         city:
@@ -173,9 +175,23 @@ components:
         description:
           type: string
         imageUrl:
-          type: string
+          type: ["string", "null"]
+        price:
+          type: ["string", "null"]
+        hours:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
         voteCount:
           type: number
+        ratingTotal:
+          type: number
+        ratingAverage:
+          type: ["number", "null"]
+        ratings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlaceRating"
         isVoted:
           type: boolean
         voters:
@@ -185,14 +201,55 @@ components:
       required:
         - id
         - tripId
+        - destinationId
         - name
         - city
         - category
         - description
         - imageUrl
+        - price
+        - hours
+        - notes
         - voteCount
+        - ratingTotal
+        - ratingAverage
+        - ratings
         - isVoted
         - voters
+    PlaceRating:
+      type: object
+      properties:
+        displayName:
+          type: string
+        rating:
+          type: number
+      required:
+        - displayName
+        - rating
+    Destination:
+      type: object
+      properties:
+        id:
+          type: number
+        tripId:
+          type: number
+        country:
+          type: string
+        city:
+          type: string
+        estimatedDays:
+          type: number
+        places:
+          type: array
+          items:
+            $ref: "#/components/schemas/Place"
+      required:
+        - id
+        - tripId
+        - country
+        - city
+        - estimatedDays
+        - places
     Trip:
       type: object
       properties:
@@ -212,6 +269,10 @@ components:
           type: number
         totalVotes:
           type: number
+        destinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Destination"
         places:
           type: array
           items:
@@ -225,6 +286,7 @@ components:
         - coverImageUrl
         - placeCount
         - totalVotes
+        - destinations
         - places
     TripSummary:
       type: object
@@ -245,6 +307,8 @@ components:
           type: number
         totalVotes:
           type: number
+        destinationCount:
+          type: number
         leadingPlace:
           type: ["string", "null"]
       required:
@@ -256,6 +320,7 @@ components:
         - coverImageUrl
         - placeCount
         - totalVotes
+        - destinationCount
         - leadingPlace
     TripVoteSummary:
       type: object

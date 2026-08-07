@@ -1,1 +1,2 @@
 - [OpenAPI integer compatibility](orval-zod-compatibility.md) — use numeric schemas unless Orval and the installed Zod runtime are upgraded together
+- [Workspace link refresh](workspace-link-refresh.md) — run a normal pnpm install after workspace dependency changes so local symlinks materialize

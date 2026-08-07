@@ -5,16 +5,30 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { PlaceRating } from './placeRating';
 
 export interface Place {
   id: number;
   tripId: number;
+  /** @nullable */
+  destinationId: number | null;
   name: string;
   city: string;
   category: string;
   description: string;
-  imageUrl: string;
+  /** @nullable */
+  imageUrl: string | null;
+  /** @nullable */
+  price: string | null;
+  /** @nullable */
+  hours: string | null;
+  /** @nullable */
+  notes: string | null;
   voteCount: number;
+  ratingTotal: number;
+  /** @nullable */
+  ratingAverage: number | null;
+  ratings: PlaceRating[];
   isVoted: boolean;
   voters: string[];
 }

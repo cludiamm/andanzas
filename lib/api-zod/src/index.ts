@@ -1,9 +1,11 @@
 export * from "./generated/api";
 export type {
+  Destination,
   DisplayNameParameter,
   Error,
   HealthStatus,
   Place,
+  PlaceRating,
   PlaceVoteSummary,
   Trip,
   TripSummary,

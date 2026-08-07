@@ -16,6 +16,7 @@ export const votesTable = pgTable(
       .references(() => placesTable.id, { onDelete: "cascade" }),
     displayName: text("display_name").notNull(),
     mode: text("mode").notNull(),
+    rating: integer("rating"),
   },
   (table) => ({
     voterPlaceUnique: unique("votes_trip_place_voter_unique").on(

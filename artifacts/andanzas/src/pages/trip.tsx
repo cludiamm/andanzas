@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, ChevronDown, Clock3, Heart, MapPin, Share2, ThumbsUp, UserRound, Users } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, Clock3, Heart, MapPin, Share2, Star, ThumbsUp, UserRound, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
@@ -18,7 +18,7 @@ function PlaceCard({ place, mode, onVote, pending }: { place: Place; mode: Mode;
   return (
     <article className={`paper-card group overflow-hidden rounded-[1.35rem] transition-all duration-300 ${place.isVoted ? 'border-primary/50 ring-1 ring-primary/20' : ''}`} data-testid={`card-place-${place.id}`}>
       <div className="relative h-52 overflow-hidden bg-secondary">
-        <img alt={place.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" src={place.imageUrl} />
+        {place.imageUrl ? <img alt={place.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" src={place.imageUrl} /> : <div className="flex h-full items-center justify-center text-primary/40"><MapPin size={42} strokeWidth={1} /></div>}
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent" />
         <span className="absolute left-4 top-4 rounded-full bg-background/85 px-3 py-1 text-[10px] font-semibold uppercase tracking-[.16em] text-foreground backdrop-blur">{place.category}</span>
         {place.isVoted && <span className="absolute bottom-4 right-4 flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"><Check size={13} /> {mode === 'solo' ? 'Saved' : 'Voted'}</span>}
@@ -29,6 +29,12 @@ function PlaceCard({ place, mode, onVote, pending }: { place: Place; mode: Mode;
           <span className="mono pt-1 text-[10px] uppercase tracking-[.12em] text-muted-foreground">{countLabel}</span>
         </div>
         <p className="mt-4 line-clamp-3 text-sm leading-6 text-muted-foreground">{place.description}</p>
+        <div className="mt-4 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+          {place.ratingAverage !== null && <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 font-semibold text-secondary-foreground"><Star className="fill-current text-accent" size={12} /> {place.ratingAverage.toFixed(1)} / 5</span>}
+          {place.price && <span className="rounded-full bg-secondary px-2.5 py-1">{place.price}</span>}
+          {place.hours && <span className="rounded-full bg-secondary px-2.5 py-1">{place.hours}</span>}
+        </div>
+        {place.notes && <p className="mt-3 text-xs italic leading-5 text-muted-foreground">{place.notes}</p>}
         {mode === 'group' && (place.voters?.length ?? 0) > 0 && (
           <div className="mt-4 flex items-start gap-2 text-xs text-muted-foreground" data-testid={`voters-${place.id}`}>
             <UserRound className="mt-0.5 shrink-0 text-primary" size={14} />
@@ -149,7 +155,22 @@ export default function TripPage() {
                 {nameError && <p className="mt-2 text-xs text-accent" data-testid="status-name-error">{nameError}</p>}
               </div>
               {summaryQuery.isError && <p className="mt-5 text-sm text-accent" data-testid="status-summary-error">Live vote totals are taking a moment. You can still vote below.</p>}
-              <div className="mt-7 grid gap-6 md:grid-cols-2">{places.map((place) => <PlaceCard key={place.id} mode={mode} onVote={voteFor} pending={voteMutation.isPending} place={place} />)}</div>
+              {tripQuery.data.destinations.length > 0 ? (
+                <div className="mt-7 space-y-12">
+                  {tripQuery.data.destinations.map((destination) => (
+                    <section key={destination.id} data-testid={`destination-${destination.id}`}>
+                      <div className="mb-5 flex items-end justify-between border-b border-border pb-3">
+                        <div>
+                          <p className="mono text-[10px] uppercase tracking-[.18em] text-primary">{destination.country}</p>
+                          <h3 className="serif mt-1 text-3xl font-semibold">{destination.city}</h3>
+                        </div>
+                        <span className="text-xs text-muted-foreground">{destination.estimatedDays} {destination.estimatedDays === 1 ? 'day' : 'days'} · {destination.places.length} places</span>
+                      </div>
+                      <div className="grid gap-6 md:grid-cols-2">{destination.places.map((place) => <PlaceCard key={place.id} mode={mode} onVote={voteFor} pending={voteMutation.isPending} place={place} />)}</div>
+                    </section>
+                  ))}
+                </div>
+              ) : <div className="mt-7 grid gap-6 md:grid-cols-2">{places.map((place) => <PlaceCard key={place.id} mode={mode} onVote={voteFor} pending={voteMutation.isPending} place={place} />)}</div>}
               {places.length === 0 && <div className="paper-card mt-7 rounded-2xl p-12 text-center" data-testid="status-empty-places"><p className="serif text-2xl font-semibold">No places pinned yet</p><p className="mt-2 text-sm text-muted-foreground">This trip is waiting for its first good idea.</p></div>}
             </section>
           </>

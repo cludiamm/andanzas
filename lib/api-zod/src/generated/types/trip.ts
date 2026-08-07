@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { Destination } from './destination';
 import type { Place } from './place';
 
 export interface Trip {
@@ -16,5 +17,6 @@ export interface Trip {
   coverImageUrl: string;
   placeCount: number;
   totalVotes: number;
+  destinations: Destination[];
   places: Place[];
 }

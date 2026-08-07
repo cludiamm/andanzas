@@ -13,17 +13,44 @@ export interface Error {
   error: string;
 }
 
+export interface PlaceRating {
+  displayName: string;
+  rating: number;
+}
+
 export interface Place {
   id: number;
   tripId: number;
+  /** @nullable */
+  destinationId: number | null;
   name: string;
   city: string;
   category: string;
   description: string;
-  imageUrl: string;
+  /** @nullable */
+  imageUrl: string | null;
+  /** @nullable */
+  price: string | null;
+  /** @nullable */
+  hours: string | null;
+  /** @nullable */
+  notes: string | null;
   voteCount: number;
+  ratingTotal: number;
+  /** @nullable */
+  ratingAverage: number | null;
+  ratings: PlaceRating[];
   isVoted: boolean;
   voters: string[];
+}
+
+export interface Destination {
+  id: number;
+  tripId: number;
+  country: string;
+  city: string;
+  estimatedDays: number;
+  places: Place[];
 }
 
 export interface Trip {
@@ -35,6 +62,7 @@ export interface Trip {
   coverImageUrl: string;
   placeCount: number;
   totalVotes: number;
+  destinations: Destination[];
   places: Place[];
 }
 
@@ -47,6 +75,7 @@ export interface TripSummary {
   coverImageUrl: string;
   placeCount: number;
   totalVotes: number;
+  destinationCount: number;
   /** @nullable */
   leadingPlace: string | null;
 }

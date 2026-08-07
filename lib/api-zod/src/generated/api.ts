@@ -30,6 +30,7 @@ export const ListTripsResponseItem = zod.object({
   "coverImageUrl": zod.string(),
   "placeCount": zod.number(),
   "totalVotes": zod.number(),
+  "destinationCount": zod.number(),
   "leadingPlace": zod.string().nullable()
 })
 export const ListTripsResponse = zod.array(ListTripsResponseItem)
@@ -63,15 +64,54 @@ export const GetTripResponse = zod.object({
   "coverImageUrl": zod.string(),
   "placeCount": zod.number(),
   "totalVotes": zod.number(),
+  "destinations": zod.array(zod.object({
+  "id": zod.number(),
+  "tripId": zod.number(),
+  "country": zod.string(),
+  "city": zod.string(),
+  "estimatedDays": zod.number(),
   "places": zod.array(zod.object({
   "id": zod.number(),
   "tripId": zod.number(),
+  "destinationId": zod.number().nullable(),
   "name": zod.string(),
   "city": zod.string(),
   "category": zod.string(),
   "description": zod.string(),
-  "imageUrl": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "price": zod.string().nullable(),
+  "hours": zod.string().nullable(),
+  "notes": zod.string().nullable(),
   "voteCount": zod.number(),
+  "ratingTotal": zod.number(),
+  "ratingAverage": zod.number().nullable(),
+  "ratings": zod.array(zod.object({
+  "displayName": zod.string(),
+  "rating": zod.number()
+})),
+  "isVoted": zod.boolean(),
+  "voters": zod.array(zod.string())
+}))
+})),
+  "places": zod.array(zod.object({
+  "id": zod.number(),
+  "tripId": zod.number(),
+  "destinationId": zod.number().nullable(),
+  "name": zod.string(),
+  "city": zod.string(),
+  "category": zod.string(),
+  "description": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "price": zod.string().nullable(),
+  "hours": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "voteCount": zod.number(),
+  "ratingTotal": zod.number(),
+  "ratingAverage": zod.number().nullable(),
+  "ratings": zod.array(zod.object({
+  "displayName": zod.string(),
+  "rating": zod.number()
+})),
   "isVoted": zod.boolean(),
   "voters": zod.array(zod.string())
 }))
