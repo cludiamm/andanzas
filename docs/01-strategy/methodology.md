@@ -1,7 +1,9 @@
 # Andanzas — The Planning Methodology
 
 *Stage 0 artifact. The differentiator, written down.*
-*Extracted from ~7 years of trips (2019–2026). Version 1.0 — August 2026.*
+*Extracted from ~7 years of trips (2019–2026). Version 1.1 — August 2026.*
+
+> **v1.1 change:** §8 was split into **invariants** (outcomes — violating them makes the output wrong) and **configurable defaults** (mechanisms — violating them makes the output someone else's trip). Three rules previously frozen as constraints — day composition balance, the must-visit allowance, and the advocacy format — are now planner-configurable, and the outcomes they were protecting became the invariants instead. Affected rules are annotated *(default — §8.2)* below. See ADR 0002.
 
 ---
 
@@ -55,10 +57,11 @@ The Informed Traveller is **observed, not hypothesised** — a friend on the Pat
 **2.2 The proposal pool is unlimited.** Any member adds any place, with links, opening hours, ticket prices, and estimated days. No cap at proposal time. Constraint comes later, and from reality — not from a quota.
 
 **2.3 Advocacy precedes voting.** An online meeting where each member presents their places and argues why each should stay. **This is where the reasoning lives, and it is currently thrown away** — voting captures the verdict, not the argument. Without it, recognisable places beat better ones.
+*The synchronous meeting is the **default format** (§8.2); async written advocacy is the alternative. That advocacy happens at all — that every shortlisted place carries its argument — is the invariant (§8.1).*
 
-**2.4 Voting filters, typically at 4–5 stars.** Only high-scoring places shortlist.
+**2.4 Voting filters, typically at 4–5 stars.** Only high-scoring places shortlist. *(threshold: default — §8.2)*
 
-**2.5 The must-visit exemption — one per member.** Each member designates exactly ONE place that bypasses voting entirely.
+**2.5 The must-visit exemption — one per member.** Each member designates exactly ONE place that bypasses voting entirely. *(allowance: default — §8.2)*
 
 > **This is a fairness mechanic, not a round number.** It exists to stop the majority erasing a minority preference. Without it, a member can propose, advocate, and lose everything — and travels on someone else's trip.
 
@@ -75,10 +78,12 @@ The Informed Traveller is **observed, not hypothesised** — a friend on the Pat
 - **Circled path** — visit places arranged geographically in a loop around the accommodation; start and end on foot at the accommodation.
 - **Linear path** — either start at the nearest place and work outward, returning by bus/train; or start at the farthest and finish nearest the accommodation.
 
-**3.2 Balance rules:**
+**3.2 Balance rules** *(default — §8.2)***:**
 - No more than **2 museums** in one day.
 - Distribute **parks and open-air activities** across the trip rather than clustering.
 - Always leave time to **sleep, rest, eat, and enjoy**. A full day is not a good day.
+
+> These are instances of one underlying rule: **don't stack high-intensity, same-modality activities in a single day.** "Museum" is a proxy for *indoor, high-attention, ~3 hours, on your feet* — which is why four temples in a day is the same problem and the museum count would not catch it. The generalisation is **intensity × modality against a daily load budget**, not a density setting per activity type. The budget is the configurable value; not exceeding it is the invariant (§8.1).
 
 **3.3 Opening days and hours override geography.** Two places that are physically adjacent may not be same-day if their opening schedules conflict. **Geography proposes; the calendar disposes.**
 
@@ -156,14 +161,50 @@ The three gaps that unlimited time would not solve. **This is the case for AI in
 
 ---
 
-## 8. Constraints — what must never change
+## 8. Invariants and defaults
+
+*Revised in v1.1. See ADR 0002 for the reasoning.*
+
+The distinction is the point. **An invariant is a property of the result — violating it makes the output *wrong*. A default is a mechanism for reaching that property — violating it makes the output *someone else's trip*, which is permitted, provided the system says out loud that it did so.**
+
+Invariants are therefore written as **outcomes**, never as mechanisms. This is what makes them gradeable: an eval can check "did every member keep something of theirs" against any group's configuration, without knowing that group's settings.
+
+### 8.1 Invariants — never configurable
 
 1. **Reconciliation, cost splits, currency conversion, distance and price checks stay deterministic.** No model.
-2. **The must-visit exemption is inviolable** except by the two computable overrides.
-3. **Opening hours are hard.** A schedule that violates them is not a lesser answer; it is a wrong one.
-4. **The system proposes, the planner disposes.** The co-admin test. Never auto-book, never auto-cut.
-5. **Advocacy is not replaced.** The system may draft the case for a place; the group still argues and votes.
-6. **The manual path stays fully functional.** Everything must work with the model switched off.
+2. **Opening hours are hard.** A schedule that violates them is not a lesser answer; it is a wrong one.
+3. **The system proposes, the planner disposes.** The co-admin test. Never auto-book, never auto-cut.
+4. **The system may draft an argument; it never casts, replaces, or weights a vote.**
+5. **Every member ends the shortlist with at least one place they chose still standing.** Overridable only by the two computable checks — *too far* or *too expensive* (§2.6). When overridden, both the member and the planner are told.
+6. **Every shortlisted place carries the argument for it, not only its score.**
+7. **No day exceeds the trip's configured load budget.**
+8. **The manual path stays fully functional.** Everything must work with the model switched off.
+
+### 8.2 Configurable defaults — set by the planner
+
+| Setting | Default | Replaces the old constraint |
+|---|---|---|
+| **Day load budget** (intensity × modality per day) | standard | "no more than 2 museums" (§3.2) |
+| **Must-visit allowance** | 1 per member | "exactly one per member" (§2.5) |
+| **Advocacy format** | synchronous meeting | "the meeting happens" (§2.3) |
+| **Vote threshold** | 4–5 stars | §2.4 |
+| **Day shape preference** | auto (circled / linear) | §3.1 |
+
+**This list staying short is a design constraint.** Growth in it is a regression, not a feature — a settings page nobody fills in is worse than a default nobody questions.
+
+### 8.3 Who configures, and when
+
+Governance here is **transparency, not permissions** — the generalisation of §5.6, *"Never restrict. Monitor and surface."* Configuration abuse works because it is invisible, not because it is permitted.
+
+1. **The planner configures.** No ratification gate, no quorum. §1 establishes that one motivated planner is the entire top of funnel; a blocking process step is paid for by the person the product depends on.
+2. **The configuration freezes when proposals open.** A timing constraint rather than a permission constraint — cheap to build, and it prevents the abuse that matters: watching the votes arrive, seeing a preferred place lose, and raising the allowance retroactively. The rules are set before anyone knows what is at stake.
+3. **The rules are disclosed to every member at invite,** in one plain sentence — *"This trip: one must-visit each, written advocacy, standard day load."* A sentence, not a settings screen.
+4. **The system reports invariant violations to the planner** while they are still cheap to fix — *"Ana has no surviving place."*
+
+### 8.4 Open
+
+- **The late joiner.** A member arriving after proposals open has no must-visit allowance against a frozen configuration. Either they receive one by exception — and the freeze has a documented hole — or they do not, and the fairness invariant excludes precisely the member most likely to be steamrolled. Unresolved.
+- **The trigger point for the §8.3.4 report.** "Before flights are booked" is unreliable; §4.3 states flight booking can occur anywhere in the sequence. Likely the first item crossing into *held*.
 
 ---
 
